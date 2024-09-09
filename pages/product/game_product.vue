@@ -61,8 +61,8 @@
 					</view>
 				</view>
 			</view>
-			<view class="buy-button-back">
-				<view class="buy-button" @click="navToDetailPage">立即购买</view>
+			<view class="buy-button-back"  @click="navToDetailPage">
+				<view class="buy-button">立即购买</view>
 			</view>
 			
 		</view>

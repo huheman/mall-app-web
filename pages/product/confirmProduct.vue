@@ -54,8 +54,8 @@
 				<text style="color: white;font-size: 18px;">提交订单</text>
 			</view>
 		</view>
-		
-		
+
+
 		<!-- 优惠券面板 -->
 		<view class="mask" :class="maskState===0 ? 'none' : maskState===1 ? 'show' : ''" @click="toggleMask">
 			<view class="mask-content" @click.stop.prevent="stopPrevent">
@@ -70,7 +70,7 @@
 							<text class="price">{{item.amount}}</text>
 							<text>满{{item.minPoint}}可用</text>
 						</view>
-		
+
 						<view class="circle l"></view>
 						<view class="circle r"></view>
 					</view>
@@ -99,6 +99,8 @@
 		fetchCartList,
 		listCoupon,
 		updateQuantity,
+		updateAttribute,
+		updateAttr
 	} from '@/api/cart.js'
 	export default {
 		data() {
@@ -118,7 +120,7 @@
 				couponList: [],
 				selectedCoupon: null,
 				cartId: null,
-				maskState:0
+				maskState: 0
 			}
 		},
 		async onLoad(options) {
@@ -132,24 +134,24 @@
 			// 拿到要填写的attribute
 			this.loadData(id);
 		},
-		computed:{
-			couponTips(){
+		computed: {
+			couponTips() {
 				if (this.selectedCoupon) {
 					return this.selectedCoupon.name
 				}
-				if (this.couponList && this.couponList.length >0 ){
-					return this.couponList.length+'张可用优惠券'
-				}else{
+				if (this.couponList && this.couponList.length > 0) {
+					return this.couponList.length + '张可用优惠券'
+				} else {
 					return '暂无可用优惠券'
 				}
 			}
 		},
 		watch: {
-			quantity(newVal){
+			quantity(newVal) {
 				this.fetchCoupon();
 				this.calculateTotal();
 			},
-			selectedCoupon(newVal){
+			selectedCoupon(newVal) {
 				this.calculateTotal()
 			}
 		},
@@ -189,46 +191,52 @@
 			},
 			fetchCoupon() {
 				listCoupon().then(resp => {
-					this.couponList = resp.data.map(i=>{return i.coupon})
+					this.couponList = resp.data.map(i => {
+						return i.coupon
+					})
 					console.log(this.couponList)
 					if (this.couponList.length > 0) {
 						this.selectedCoupon = this.couponList[0]
-					}else{
+					} else {
 						this.selectedCoupon = null
 					}
 				})
 			},
 			confirmOrder() {
-				generateConfirmOrder(JSON.stringify([this.cartId])).then(response => {
-					let orderParam = {
-						payType: 0,
-						couponId: this.selectedCoupon && this.selectedCoupon.id,
-						cartIds: [this.cartId],
-						memberReceiveAddressId: null,
-						useIntegration: null
-					}
-					generateOrder(orderParam).then(response => {
-						let orderId = response.data.order.id;
-						uni.showModal({
-							title: '提示',
-							content: '订单创建成功，是否要立即支付？',
-							confirmText: '去支付',
-							cancelText: '取消',
-							success: function(res) {
-								if (res.confirm) {
-									uni.redirectTo({
-										url: `/pages/money/pay?orderId=${orderId}`
-									})
-								} else if (res.cancel) {
-									console.log("cancel")
-									uni.redirectTo({
-										url: '/pages/order/order?state=0'
-									})
+
+				updateAttr(this.cartId, this.attribute).then(resp => {
+					generateConfirmOrder(JSON.stringify([this.cartId])).then(response => {
+						let orderParam = {
+							payType: 0,
+							couponId: this.selectedCoupon && this.selectedCoupon.id,
+							cartIds: [this.cartId],
+							memberReceiveAddressId: null,
+							useIntegration: null
+						}
+						generateOrder(orderParam).then(response => {
+							let orderId = response.data.order.id;
+							uni.showModal({
+								title: '提示',
+								content: '订单创建成功，是否要立即支付？',
+								confirmText: '去支付',
+								cancelText: '取消',
+								success: function(res) {
+									if (res.confirm) {
+										uni.redirectTo({
+											url: `/pages/money/pay?orderId=${orderId}`
+										})
+									} else if (res.cancel) {
+										console.log("cancel")
+										uni.redirectTo({
+											url: '/pages/order/order?state=0'
+										})
+									}
 								}
-							}
+							});
 						});
 					});
-				});
+				})
+
 
 			},
 			decrement() {
@@ -258,6 +266,9 @@
 					this.productPic = this.product.pic
 					this.attribute = response.data.productAttributeList.filter(attr => {
 						return attr.type == 1
+					}).map(attr => {
+						attr['key'] = attr['name']
+						return attr
 					})
 					this.productSkuStock = response.data.skuStockList.filter(item => {
 						return item.id == this.skuId
@@ -298,14 +309,16 @@
 </script>
 
 <style>
-	.coupon-text{
+	.coupon-text {
 		color: #f7245b;
 	}
+
 	.coupon-title {
 		font-weight: bolder;
 		color: #f7245b;
 	}
-	.coupon-container{
+
+	.coupon-container {
 		display: flex;
 		flex-direction: row;
 		align-items: center;
@@ -315,6 +328,7 @@
 		border-radius: 10rpx;
 		padding: 24px;
 	}
+
 	.container {
 		background-color: rgb(243, 249, 254);
 		/* 为整个容器添加背景图 */
@@ -503,7 +517,7 @@
 		cursor: pointer;
 		/* 使鼠标变成手指样式 */
 	}
-	
+
 	/* 优惠券面板 */
 	.mask {
 		display: flex;
@@ -516,7 +530,7 @@
 		background: rgba(0, 0, 0, 0);
 		z-index: 9995;
 		transition: .3s;
-	
+
 		.mask-content {
 			width: 100%;
 			min-height: 30vh;
@@ -526,34 +540,34 @@
 			transition: .3s;
 			overflow-y: scroll;
 		}
-	
+
 		&.none {
 			display: none;
 		}
-	
+
 		&.show {
 			background: rgba(0, 0, 0, .4);
-	
+
 			.mask-content {
 				transform: translateY(0);
 			}
 		}
 	}
-	
+
 	/* 优惠券列表 */
 	.coupon-item {
 		display: flex;
 		flex-direction: column;
 		margin: 20upx 24upx;
 		background: #fff;
-	
+
 		.con {
 			display: flex;
 			align-items: center;
 			position: relative;
 			height: 120upx;
 			padding: 0 30upx;
-	
+
 			&:after {
 				position: absolute;
 				left: 0;
@@ -565,7 +579,7 @@
 				transform: scaleY(50%);
 			}
 		}
-	
+
 		.left {
 			display: flex;
 			flex-direction: column;
@@ -574,18 +588,18 @@
 			overflow: hidden;
 			height: 100upx;
 		}
-	
+
 		.title {
 			font-size: 32upx;
 			color: $font-color-dark;
 			margin-bottom: 10upx;
 		}
-	
+
 		.time {
 			font-size: 24upx;
 			color: $font-color-light;
 		}
-	
+
 		.right {
 			display: flex;
 			flex-direction: column;
@@ -595,24 +609,24 @@
 			color: $font-color-base;
 			height: 100upx;
 		}
-	
+
 		.price {
 			font-size: 44upx;
 			color: $base-color;
-	
+
 			&:before {
 				content: '￥';
 				font-size: 34upx;
 			}
 		}
-	
+
 		.tips {
 			font-size: 24upx;
 			color: $font-color-light;
 			line-height: 60upx;
 			padding-left: 30upx;
 		}
-	
+
 		.circle {
 			position: absolute;
 			left: -6upx;
@@ -622,7 +636,7 @@
 			height: 20upx;
 			background: #f3f3f3;
 			border-radius: 100px;
-	
+
 			&.r {
 				left: auto;
 				right: -6upx;

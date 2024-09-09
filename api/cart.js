@@ -44,3 +44,11 @@ export function clearCartList() {
 		url: '/cart/clear'
 	})
 }
+
+export function updateAttr(cartId,attr) {
+	return request({
+		method:'POST',
+		url	: '/cart/updateAttr/'+cartId,
+		data:attr
+	})
+}
