@@ -21,3 +21,9 @@ export function fetchMemberCouponList(useStatus) {
 		params:{useStatus:useStatus}
 	})
 }
+export function listCouponCanReceive(){
+	return request({
+		method: 'GET',
+		url:`/member/coupon/listByMember`
+	})
+}

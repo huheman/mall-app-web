@@ -15,6 +15,13 @@ export function fetchCartList() {
 	})
 }
 
+export function listCoupon() {
+	return request({
+		method:'GET',
+		url:'/member/coupon/list/cart/1'
+	})
+}
+
 export function deletCartItem(params) {
 	return request({
 		method: 'POST',

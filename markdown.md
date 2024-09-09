@@ -31,3 +31,12 @@ table:pms_product_attribute
 
 add的内容是
 {"price":200,"productAttr":"[{\"key\":\"充值方式\",\"value\":\"代充\"},{\"key\":\"区服\",\"value\":\"国际服\"},{\"key\":\"产品类型\",\"value\":\"月卡\"}]","productBrand":"暂不可用","productCategoryId":61,"productId":47,"productName":"王者荣耀200元点卡","productPic":"http://huhp-mall-dev.oss-cn-guangzhou.aliyuncs.com/mall-dev/images/20240906/abstract.png","productSkuCode":"202409060047011","productSkuId":285,"productSn":"","productSubTitle":"王者荣耀的200元点卡","quantity":1}
+
+
+一进来就要clear,add,list了，因为要拿到可用的优惠券信息
+/update/quantity
+member/coupon/add/33 是用来领取优惠券的
+
+/list/cart/1 是查看当前用户购物车可用的优惠券，每次修改数量后都要重新请求，其中1是指可用的优惠券，是固定的
+
+l/member/coupon/listByProduct/47 是根据产品查看可用的优惠券

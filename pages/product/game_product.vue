@@ -53,7 +53,7 @@
 		<view class="bottom-bar" v-if="selectedSku">
 			<view class="total-info">
 				<view class="price-details">
-					<text class="total-label">合计：</text>
+					<text class="total-label">价格：</text>
 					<text class="total-price">¥{{ (selectedSku.promotPrice || selectedSku.price).toFixed(2) }}</text>
 					<view class="original-price-container" v-if="selectedSku.promotPrice && selectedSku.price && selectedSku.promotPrice != selectedSku.price">
 						<text class="original-price">原价¥{{ selectedSku.price.toFixed(2) }}</text>
@@ -147,7 +147,7 @@
 			navToDetailPage() {
 				if(this.selectedSku) {
 					uni.navigateTo({
-						url: `/pages/product/confirmProduct?id=${this.selectedSku.productId}&gameName=${this.selectedSku.gameName}&gamePic=${this.selectedSku.gamePic}&productPic=${this.selectedSku.pic}&productName=${this.selectedSku.name}&spData=${JSON.stringify(this.selectedSku.spData)}&promotPrice=${this.selectedSku.promotPrice}&price=${this.selectedSku.price}&productBrand=${this.selectedSku.productBrand}&productCategoryId=${this.selectedSku.productCategoryId}&productSubTitle=${this.selectedSku.productSubTitle}`
+						url: `/pages/product/confirmProduct?id=${this.selectedSku.productId}&gameName=${this.selectedSku.gameName}&gamePic=${this.selectedSku.gamePic}&skuId=${this.selectedSku.skuId}`
 					})
 				}
 				

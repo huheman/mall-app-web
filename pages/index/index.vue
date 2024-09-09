@@ -76,7 +76,41 @@
 			</view>
 		</view>
 		<view style="height: 20px;"></view>
+
+		<view>
+			<!-- 遮罩层 -->
+			<view class="popup-mask" @click="closePopup" v-if="showPopup && couponList.length>0"></view>
+
+			<!-- 优惠券模态框 -->
+			<view class="coupon-popup" v-if="showPopup && couponList.length>0">
+				<!-- 关闭按钮 -->
+				<view class="close-btn" @click="closePopup">×</view>
+
+				<!-- 标题部分 -->
+				<view class="popup-header">
+					<text class="popup-title">领取优惠券</text>
+					<text class="popup-subtitle">限时优惠，点击领取</text>
+				</view>
+				<!-- 优惠券部分 -->
+				<view class="coupon-list">
+					<view class="coupon-item" v-for="(item,index) in couponList">
+						<view class="coupon-item-left">
+							<text class="coupon-amount">￥{{item.amount}}</text>
+							<text class="coupon-original-price">{{item.name}}</text>
+							<text class="coupon-description">有效期至{{item.endTime | formatDateTime}}</text>
+						</view>
+						<view class="coupon-item-right" @click="receiveCoupon(item)">
+							<view style="font-size: 20px;">立即领取</view>
+						</view>
+					</view>
+
+				</view>
+			</view>
+		</view>
+
 	</view>
+
+
 </template>
 
 <script>
@@ -84,6 +118,10 @@
 		fetchContent,
 		fetchRecommendProductList
 	} from '@/api/home.js';
+	import {
+		listCouponCanReceive,
+		addMemberCoupon
+	} from '@/api/coupon.js';
 	import {
 		formatDate
 	} from '@/utils/date';
@@ -138,21 +176,55 @@
 				],
 				visibleAnnouncements: [],
 				currentIndex: 0,
-
+				showPopup: true,
+				couponList: []
 			};
 		},
 		onLoad() {
 			this.loadData();
+			this.fetchCoupon()
 		},
 		mounted() {
 			this.visibleAnnouncements = this.announcements.slice(0, 3); // 初始显示前三个公告
 			setInterval(this.scrollAnnouncements, 3000); // 每3秒滚动一次
 		},
+		filters: {
+			formatDateTime(time) {
+				if (time == null || time === '') {
+					return 'N/A';
+				}
+				let date = new Date(time);
+				date.setDate(date.getDate() - 1); // 减去一天
+				return formatDate(date, 'yyyy-MM-dd')
+			},
+		},
 		methods: {
+			closePopup() {
+				this.showPopup = false;
+			},
+			receiveCoupon(coupon) {
+				addMemberCoupon(coupon.id).then(resp => {
+					this.fetchCoupon()
+					if (resp.code == 200) {
+						uni.showToast({
+							title: resp.message,
+							icon: 'none',
+							mask: true,
+							duration: 2000,
+						});
+					}
+				})
+			},
 			//轮播图切换修改背景色
 			swiperChange(e) {
 				const index = e.detail.current;
 				this.swiperCurrent = index;
+			},
+			async fetchCoupon() {
+				listCouponCanReceive().then(resp => {
+					this.couponList = resp.data
+					console.log(this.couponList)
+				})
 			},
 			/**
 			 * 加载数据
@@ -346,6 +418,7 @@
 			border-radius: 10upx;
 		}
 	}
+
 
 	.swiper-dots {
 		display: flex;
@@ -588,5 +661,117 @@
 		width: 100%;
 		height: 120px;
 
+	}
+
+	/* 遮罩层 */
+	.popup-mask {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-color: rgba(0, 0, 0, 0.5);
+		z-index: 999;
+	}
+
+	/* 模态框 */
+	.coupon-popup {
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 80%;
+		max-width: 350px;
+		background-color: #fff;
+		padding: 20px;
+		border-radius: 15px;
+		z-index: 1000;
+		box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+	}
+
+	/* 关闭按钮 */
+	.close-btn {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		font-size: 20px;
+		cursor: pointer;
+	}
+
+	/* 标题部分 */
+	.popup-header {
+		display: flex;
+		flex-direction: row;
+		align-items: flex-end;
+		justify-content: space-between;
+		margin-bottom: 20px;
+		width: 100%;
+	}
+
+	.popup-title {
+		font-size: 16px;
+		font-weight: bold;
+	}
+
+	.popup-subtitle {
+		font-size: 18px;
+		color: #fff;
+	}
+
+	/* 优惠券列表 */
+	.coupon-list {
+		margin-top: 10px;
+	}
+
+	.coupon-item {
+		background-color: #ff6600;
+		margin-bottom: 15px;
+		border-radius: 10px;
+		position: relative;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+		height: 100px;
+		overflow: hidden;
+	}
+
+	.coupon-item-left {
+		color: white;
+		padding: 0 15px;
+		display: flex;
+		flex-direction: column;
+		// align-items: flex-start;
+		justify-content: flex-start;
+	}
+
+	.coupon-item-right {
+		width: 38%;
+		height: 100%;
+		background-color: #ef1635;
+		display: flex;
+		flex-direction: row;
+		// align-items: flex-start;
+		justify-content: center;
+		align-items: center;
+		color: white;
+		font-weight: bolder;
+		font-size: 24rpx;
+
+	}
+
+	.coupon-amount {
+		font-size: 30px;
+		font-weight: bold;
+	}
+
+
+
+	.coupon-original-price {
+		font-size: 12px;
+	}
+
+	.coupon-description {
+		font-size: 12px;
 	}
 </style>
